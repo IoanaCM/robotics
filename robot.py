@@ -19,7 +19,8 @@ class robot:
         self.robot_width = 24       #width between wheels of robot (cm)
         self.dps = 360              #desired wheel speed (degrees per second)     
 
-        self.error = 0.1            #manually calibrated error
+        self.forward_tuning = 0.0725    #manually calibrated error
+        self.spin_tuning = 0.018
 
 
         #constants calculated from configurable constants (should not be changed)
@@ -35,7 +36,7 @@ class robot:
         """
 
         #direction = 1 for spin left, -1 for spin right
-        t = radians / self.wheel_speed - self.error/2 #time to spin 90 degrees
+        t = radians / self.wheel_speed + self.spin_tuning
         self.BP.set_motor_dps(self.L, -direction * self.dps)
         self.BP.set_motor_dps(self.R, direction * self.dps)
 
@@ -88,7 +89,7 @@ class robot:
         """
         Drives straight forward 'distance' cm
         """
-        t = distance / self.wheel_speed + self.error # time to walk a side
+        t = distance / self.wheel_speed + self.forward_tuning
         self.BP.set_motor_dps(self.L, self.dps)
         self.BP.set_motor_dps(self.R, self.dps)
             
