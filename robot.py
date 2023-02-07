@@ -11,39 +11,39 @@ class robot:
         self.BP = brickpi3.BrickPi3()
 
         # design constants
-        self.L = self.BP.PORT_A     #Port used for left wheel
-        self.R = self.BP.PORT_D     #Port used for right wheel
+        self.L = self.BP.PORT_A     # Port used for left wheel
+        self.R = self.BP.PORT_D     # Port used for right wheel
 
         # calibration constants
-        self.wheel_radius = 2.8     #radius of robot wheels (cm)
-        self.robot_width = 24       #width between wheels of robot (cm)
-        self.dps = 360              #desired wheel speed (degrees per second)     
+        self.wheel_radius = 2.8     # radius of robot wheels (cm)
+        self.robot_width = 23       # width between wheels of robot (cm)
+        self.dps = 360              # desired wheel speed (degrees per second)
 
-        self.forward_tuning = 0.0725    #manually calibrated error
-        self.spin_tuning = 0.018
+        #manually calibrated tuning to adjust error
+        self.forward_tuning = 0.0725    # increasing makes the robot drive further
+        self.spin_tuning = -0.013       # increasing makes the robot turn more
 
 
-        #constants calculated from configurable constants (should not be changed)
-        self.wheel_circ = 2 * PI * self.wheel_radius            #circumference of robot wheels
-        self.wheel_speed = self.wheel_circ * self.dps / 360     #speed wheels should turn
+        # constants calculated from configurable constants (should not be changed)
+        self.wheel_circ = 2 * PI * self.wheel_radius            # circumference of robot wheels
+        self.wheel_speed = self.wheel_circ * self.dps / 360     # speed wheels should turn
 
 
     #========== Private methods - Do not call directly ===========
-    def private_spin(self, direction, radians):
+    def private_spin(self, direction, degrees):
         """
         PRIVATE METHOD - DO NOT CALL THIS METHOD\n
         Use spinL and spinR instead
         """
 
-        #direction = 1 for spin left, -1 for spin right
-        t = radians / self.wheel_speed + self.spin_tuning
+        # direction = -1 for spin left, 1 for spin right
+        rads = degrees * PI/180
+        distance = rads * self.robot_width / 2
+        t = distance / self.wheel_speed + self.spin_tuning
         self.BP.set_motor_dps(self.L, -direction * self.dps)
         self.BP.set_motor_dps(self.R, direction * self.dps)
 
         time.sleep(t)
-
-        self.BP.set_motor_dps(self.L, 0)
-        self.BP.set_motor_dps(self.R, 0)
 
         self.stop()
         return
@@ -62,7 +62,7 @@ class robot:
             self.BP.offset_motor_encoder(self.R, self.BP.get_motor_encoder(self.R))
 
             # Set power limits on motors
-            self.BP.set_motor_limits(self.L, 50) 
+            self.BP.set_motor_limits(self.L, 50)
             self.BP.set_motor_limits(self.R, 50)
 
         except IOError as error:
@@ -92,23 +92,23 @@ class robot:
         t = distance / self.wheel_speed + self.forward_tuning
         self.BP.set_motor_dps(self.L, self.dps)
         self.BP.set_motor_dps(self.R, self.dps)
-            
+
         time.sleep(t)
 
         self.stop()
         return
 
-    def spinL(self, radians):
+    def spinL(self, degrees):
         """
-        Spins 'radians' radians to the left in place
+        Spins 'degrees' degrees to the left in place
         """
-        self.private_spin(1, radians)
+        self.private_spin(-1, degrees)
         return
 
-    def spinR(self, radians):
+    def spinR(self, degrees):
         """
-        Spins 'radians' radians to the right in place
+        Spins 'degrees' degrees to the right in place
         """
-        self.private_spin(-1, radians)
+        self.private_spin(1, degrees)
         return
 

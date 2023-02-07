@@ -18,13 +18,16 @@ def main():
     r = robot.robot()
     r.setup()
 
-    try:    
-        while True:
-            robot.forward(40)
-            robot.spinL(PI/2)
-            
+    try:
+        for i in range(0,4):
+            r.forward(40)
+            r.spinL(90)
+
     except KeyboardInterrupt: # except the program gets interrupted by Ctrl+C on the keyboard.
-        robot.shutdown()       
+        print("Quitting early")
+
+    finally:
+        r.shutdown()
         return
 
 
