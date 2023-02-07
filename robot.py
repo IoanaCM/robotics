@@ -1,4 +1,5 @@
 from math import pi as PI
+from math import sin, cos
 import time
 import brickpi3
 
@@ -9,6 +10,12 @@ class robot:
     #=========== Constructor function ===========
     def __init__(self):
         self.BP = brickpi3.BrickPi3()
+
+        # Idealised position of robot
+        # (starting at the origin driving along the positive x axis)
+        self.x = 0
+        self.y = 0
+        self.theta = 0 #degrees
 
         # design constants
         self.L = self.BP.PORT_A     # Port used for left wheel
@@ -36,12 +43,12 @@ class robot:
         Use spinL and spinR instead
         """
 
-        # direction = -1 for spin left, 1 for spin right
+        # direction = 1 for spin left, -1 for spin right
         rads = degrees * PI/180
         distance = rads * self.robot_width / 2
         t = distance / self.wheel_speed + self.spin_tuning
-        self.BP.set_motor_dps(self.L, -direction * self.dps)
-        self.BP.set_motor_dps(self.R, direction * self.dps)
+        self.BP.set_motor_dps(self.L, direction * self.dps)
+        self.BP.set_motor_dps(self.R, -direction * self.dps)
 
         time.sleep(t)
 
@@ -98,19 +105,27 @@ class robot:
         time.sleep(t)
 
         self.stop()
+
+        self.x = self.x + distance * cos(self.theta)
+        self.y = self.y + distance * sin(self.theta)
+
         return
 
     def spinL(self, degrees):
         """
         Spins 'degrees' degrees to the left in place
         """
-        self.private_spin(-1, degrees)
+        self.private_spin(1, degrees)
+
+        self.theta = self.theta + degrees
         return
 
     def spinR(self, degrees):
         """
         Spins 'degrees' degrees to the right in place
         """
-        self.private_spin(1, degrees)
+        self.private_spin(-1, degrees)
+
+        self.theta = self.theta - degrees
         return
 
