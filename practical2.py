@@ -30,9 +30,10 @@ try:
     dps = 360
     dps2 = 360
     square_side = 40
+    stop_distance = 10
     error = 0.0725
     error2 = -0.0565
-    t1 = square_side / (wheel_circ * dps / 360) + error # time to walk a side
+    t1 = stop_distance / (wheel_circ * dps / 360) + error # time to walk 10cm
     rotate_distance = 2 * math.pi * robot_width / 8
     t2 = rotate_distance / (wheel_circ * dps / 360) + error2 # time to rotate
     i = 0
@@ -42,19 +43,41 @@ try:
     print("Motor A Status: ", BP.get_motor_status(BP.PORT_A))
     while i<4:
         i=i+1
-        BP.set_motor_dps(BP.PORT_A, dps)             # set the target speed for motor A in Degrees Per Second
-        BP.set_motor_dps(BP.PORT_D, dps2)
         print("Side: ", i, "  Motor A Status: ", BP.get_motor_status(BP.PORT_A))
         print("Side: ", i, "  Motor D Status: ", BP.get_motor_status(BP.PORT_D))
+        BP.set_motor_dps(BP.PORT_A, dps)             # set the target speed for motor A in Degrees Per Second
+        BP.set_motor_dps(BP.PORT_D, dps2)
         time.sleep(t1)
         BP.set_motor_dps(BP.PORT_D, 0)
         BP.set_motor_dps(BP.PORT_A, 0)
+        print("Side: ", i, "  Motor A Status: ", BP.get_motor_status(BP.PORT_A))
+        print("Side: ", i, "  Motor D Status: ", BP.get_motor_status(BP.PORT_D))
+        BP.set_motor_dps(BP.PORT_A, dps)             # set the target speed for motor A in Degrees Per Second
+        BP.set_motor_dps(BP.PORT_D, dps2)
+        time.sleep(t1)
+        BP.set_motor_dps(BP.PORT_D, 0)
+        BP.set_motor_dps(BP.PORT_A, 0)
+        print("Side: ", i, "  Motor A Status: ", BP.get_motor_status(BP.PORT_A))
+        print("Side: ", i, "  Motor D Status: ", BP.get_motor_status(BP.PORT_D))
+        BP.set_motor_dps(BP.PORT_A, dps)             # set the target speed for motor A in Degrees Per Second
+        BP.set_motor_dps(BP.PORT_D, dps2)
+        time.sleep(t1)
+        BP.set_motor_dps(BP.PORT_D, 0)
+        BP.set_motor_dps(BP.PORT_A, 0)
+        print("Side: ", i, "  Motor A Status: ", BP.get_motor_status(BP.PORT_A))
+        print("Side: ", i, "  Motor D Status: ", BP.get_motor_status(BP.PORT_D))
+        BP.set_motor_dps(BP.PORT_A, dps)             # set the target speed for motor A in Degrees Per Second
+        BP.set_motor_dps(BP.PORT_D, dps2)
+        time.sleep(t1)
+        BP.set_motor_dps(BP.PORT_D, 0)
+        BP.set_motor_dps(BP.PORT_A, 0)
+        print("Side: ", i, "  Motor A Status: ", BP.get_motor_status(BP.PORT_A))
+        print("Side: ", i, "  Motor D Status: ", BP.get_motor_status(BP.PORT_D))
         BP.set_motor_dps(BP.PORT_A, dps2)
         BP.set_motor_dps(BP.PORT_D, -dps)             # set the target speed for motor A in Degrees Per Second
-
         time.sleep(t2)
-    BP.set_motor_dps(BP.PORT_D, 0)
-    BP.set_motor_dps(BP.PORT_A, 0)
+        BP.set_motor_dps(BP.PORT_D, 0)
+        BP.set_motor_dps(BP.PORT_A, 0)
     print("Motor A Status: ", BP.get_motor_status(BP.PORT_A))
     print("Motor D Status: ", BP.get_motor_status(BP.PORT_D))
 except KeyboardInterrupt: # except the program gets interrupted by Ctrl+C on the keyboard.
