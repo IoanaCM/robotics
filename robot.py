@@ -75,7 +75,9 @@ class robot:
         Should be called at end of code\n
         Unconfigures the sensors, disables the motors, and restores the LED to the control of the BrickPi3 firmware
         """
-        self.BP.reset_all() 
+        self.stop()
+        time.sleep(0.5)
+        self.BP.reset_all()
 
     def stop(self):
         """
