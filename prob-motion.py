@@ -1,10 +1,14 @@
 from math import pi as PI
-import robot
+from math import sin, cos
+#import robot
 import time
+import random
 
 #global variables
-pause = 1 # pause delay in seconds
-num_Particles = 100
+pause = 1             # pause delay in seconds
+num_particles = 100   # number of particle predictions
+sigma_forward = 0.1   # standard deviation in cm
+sigma_spin = 0.01     # standard deviation in radians
 
 
 def main():
@@ -12,31 +16,39 @@ def main():
     r.setup()
 
     try:
+        # initialise particles array
+        particles = [(0,0,0)] * num_particles
 
-        drawLine(0,0,40,0)
-        drawLine(40,0,40,40)
-        drawLine(40,40,0,40)
-        drawLine(0,40,0,0)
-
-        drawParticles([(r.x,r.y,r.theta)])
+        #draw ideal square
+        drawLine((0,0,40,0))
+        drawLine((40,0,40,40))
+        drawLine((40,40,0,40))
+        drawLine((0,40,0,0))
+        #draw initial particles
+        drawParticles(particles)
 
         for i in range(0,4):
             for j in range(0,4):
 
+                # move robot forward
                 r.forward(10)
                 time.sleep(pause)
 
-                drawParticles([(r.x,r.y,r.theta)])
+                # update particle predictions for forward movement
+                particles = list(map(updateParticleForward, particles))
+                drawParticles(particles)
 
+            # spin robot
             r.spinL(90)
             time.sleep(pause)
 
-            drawParticles([(r.x,r.y,r.theta)])
+            #update particle predictions for spin
+            particles = list(map(updateParticleSpin, particles))
+            drawParticles(particles)
 
 
     except KeyboardInterrupt: # except the program gets interrupted by Ctrl+C on the keyboard.
         print("Quitting early")
-
 
     except Exception as e:
         print(e)
@@ -47,20 +59,41 @@ def main():
         return
 
 
+def updateParticleForward(particle):
+    """
+    Update particle prediction for forward movement of 10cm
+    particle :: 3-tuple (x,y,theta)
+    """
+    x,y,theta = particle
 
-def drawLine(x0,y0,x1,y1):
+    error = random.gauss(0,sigma_forward)
+    return (x + (10 + error) * cos(theta), y + (10 + error) * sin(theta), theta)
+
+def updateParticleSpin(particle):
+    """
+    Update particle prediction for left spin PI/2 radians
+    particle :: 3-tuple (x,y,theta)
+    """
+    x,y,theta = particle
+
+    error = random.gauss(0,sigma_spin)
+    return (x, y, (theta + PI/2 + error) % (2*PI))
+    
+
+
+def drawLine(line):
     """
     Wrapper for web interface\n
-    x0,y0,x1,y1 : robot coordinates
+    line :: 4-tuple (x0,y0,x1,y1) - robot coordinates of line
     """
-
+    x0,y0,x1,y1 = line
     #transform from robot coordinates to screen coordinates
     tx0 =  x0 * 10 + 100
     ty0 = -y0 * 10 + 500
     tx1 =  x1 * 10 + 100
     ty1 = -y1 * 10 + 500
-    line = (tx0,ty0,tx1,ty1)
-    print("drawLine:" + str(line))
+    graphic = (tx0,ty0,tx1,ty1)
+    print("drawLine:" + str(graphic))
     return
 
 
@@ -69,11 +102,9 @@ def transformPoint(point):
     converts point from robot coordinates to screen coordinates
     point :: 3-tuple (x,y,theta)
     """
-    x = point[0]
-    y = point[1]
-    theta = point[2]
+    x,y,theta = point
 
-    return (10 * x + 100, -y * 10 + 500, theta * PI/180)
+    return (10 * x + 100, -y * 10 + 500, theta)
 
 def drawParticles(particles):
     """
@@ -88,4 +119,6 @@ def drawParticles(particles):
 
 
 if __name__ == "__main__":
+    random.seed(17) # seed RNG for reproduceable results
     main()
+

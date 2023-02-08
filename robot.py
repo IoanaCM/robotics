@@ -11,12 +11,6 @@ class robot:
     def __init__(self):
         self.BP = brickpi3.BrickPi3()
 
-        # Idealised position of robot
-        # (starting at the origin driving along the positive x axis)
-        self.x = 0
-        self.y = 0
-        self.theta = 0 #degrees
-
         # design constants
         self.L = self.BP.PORT_A     # Port used for left wheel
         self.R = self.BP.PORT_D     # Port used for right wheel
@@ -105,10 +99,6 @@ class robot:
         time.sleep(t)
 
         self.stop()
-
-        self.x = self.x + distance * cos(self.theta)
-        self.y = self.y + distance * sin(self.theta)
-
         return
 
     def spinL(self, degrees):
@@ -117,7 +107,6 @@ class robot:
         """
         self.private_spin(1, degrees)
 
-        self.theta = self.theta + degrees
         return
 
     def spinR(self, degrees):
@@ -126,6 +115,5 @@ class robot:
         """
         self.private_spin(-1, degrees)
 
-        self.theta = self.theta - degrees
         return
 
