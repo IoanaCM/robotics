@@ -126,7 +126,7 @@ class robot:
         time.sleep(t)
         self.stop()
 
-        new_particles = [self.updateParticleSpin(p,distance) for p in self.particles]
+        new_particles = [self.updateParticleForward(p,distance) for p in self.particles]
         self.particles = new_particles
         return
         
