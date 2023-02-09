@@ -27,8 +27,7 @@ def main():
         drawLine((0,40,0,0))
         #draw initial particles
         drawParticles(particles)
-        (mx,my),(sx,sy) = metrics(particles)
-        print(f"Mean position: ({mx},{my}), Standard Deviation: ({sx},{sy})")
+        printMetrics(particles)
 
         for i in range(0,4):
             for j in range(0,4):
@@ -39,8 +38,7 @@ def main():
                 # update particle predictions for forward movement
                 particles = list(map(updateParticleForward, particles))
                 drawParticles(particles)
-                (mx,my),(sx,sy) = metrics(particles)
-                print(f"Mean position: ({mx},{my}), Standard Deviation: ({sx},{sy})")
+                printMetrics(particles)
 
                 time.sleep(pause)
 
@@ -50,8 +48,7 @@ def main():
             #update particle predictions for spin
             particles = list(map(updateParticleSpin, particles))
             drawParticles(particles)
-            (mx,my),(sx,sy) = metrics(particles)
-            print(f"Mean position: ({mx},{my}), Standard Deviation: ({sx},{sy})")
+            printMetrics(particles)
 
             time.sleep(pause)
 
@@ -90,6 +87,14 @@ def updateParticleSpin(particle):
     g = random.gauss(0,sigma_g)
     return (x, y, (theta + PI/2 + g) % (2*PI))
     
+def printMetrics(particles):
+    (mu_x,mu_y),(sigma_x,sigma_y) = metrics(particles)
+    mx = "{:.3f}".format(mu_x)
+    my = "{:.3f}".format(mu_y)
+    sx = "{:.3f}".format(sigma_x)
+    sy = "{:.3f}".format(sigma_y)
+    print(f"Mean position: ({mx},{my}), Standard Deviation: ({sx},{sy})")
+
 def metrics(particles):
     """
     Reports mean and standard deviation of particles position array
@@ -149,4 +154,3 @@ def snd(particle):
 if __name__ == "__main__":
     #random.seed(17) # seed RNG for reproduceable results
     main()
-
