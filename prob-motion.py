@@ -1,5 +1,6 @@
 from math import pi as PI
 from math import sin, cos
+from numpy import mean, std
 import robot
 import time
 import random
@@ -26,6 +27,8 @@ def main():
         drawLine((0,40,0,0))
         #draw initial particles
         drawParticles(particles)
+        mx,my,sx,sy = metrics(particles)
+        print(f"Mean position: ({mx},{my}), Standard Deviation: ({sx},{sy})")
 
         for i in range(0,4):
             for j in range(0,4):
@@ -36,6 +39,7 @@ def main():
                 # update particle predictions for forward movement
                 particles = list(map(updateParticleForward, particles))
                 drawParticles(particles)
+                print(metrics(particles))
 
                 time.sleep(pause)
 
@@ -45,8 +49,11 @@ def main():
             #update particle predictions for spin
             particles = list(map(updateParticleSpin, particles))
             drawParticles(particles)
+            print(metrics(particles))
 
             time.sleep(pause)
+
+        
 
 
     except KeyboardInterrupt: # except the program gets interrupted by Ctrl+C on the keyboard.
@@ -82,7 +89,16 @@ def updateParticleSpin(particle):
     g = random.gauss(0,sigma_g)
     return (x, y, (theta + PI/2 + g) % (2*PI))
     
+def metrics(particles):
+    """
+    Reports mean and standard deviation of particles position array
+    particles :: list of 3-tuple [(x,y,theta)]
+    Return ((mu_X, mu_y), (sigma_x, sigma_y))
+    """
 
+    xs = list(map(fst, particles))
+    ys = list(map(snd, particles))
+    return ((mean(xs), mean(ys)),(std(xs), std(ys)))
 
 def drawLine(line):
     """
@@ -119,6 +135,14 @@ def drawParticles(particles):
     transformed_particles = list(map(transformPoint, particles))
     print("drawParticles:" + str(transformed_particles))
     return
+
+def fst(particle):
+    x,y,theta = particle
+    return x
+
+def snd(particle):
+    x,y,theta = particle
+    return y
 
 
 if __name__ == "__main__":
