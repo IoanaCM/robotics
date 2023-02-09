@@ -1,15 +1,15 @@
 from math import pi as PI
 from math import sin, cos
-#import robot
+import robot
 import time
 import random
 
 #global variables
 pause = 1             # pause delay in seconds
 num_particles = 100   # number of particle predictions
-sigma_forward = 0.1   # standard deviation in cm
-sigma_spin = 0.01     # standard deviation in radians
-
+sigma_e = 0.1   # standard deviation in cm      - error of driving too far/short
+sigma_f = 0.01  # standard deviation in radians - error of turning during forward motion
+sigma_g = 0.01  # standard deviation in radians - error of turning too far/short
 
 def main():
     r = robot.robot()
@@ -66,8 +66,9 @@ def updateParticleForward(particle):
     """
     x,y,theta = particle
 
-    error = random.gauss(0,sigma_forward)
-    return (x + (10 + error) * cos(theta), y + (10 + error) * sin(theta), theta)
+    e = random.gauss(0,sigma_e)
+    f = random.gauss(0,sigma_f)
+    return (x + (10 + e) * cos(theta), y + (10 + e) * sin(theta), theta + f)
 
 def updateParticleSpin(particle):
     """
@@ -76,8 +77,8 @@ def updateParticleSpin(particle):
     """
     x,y,theta = particle
 
-    error = random.gauss(0,sigma_spin)
-    return (x, y, (theta + PI/2 + error) % (2*PI))
+    g = random.gauss(0,sigma_g)
+    return (x, y, (theta + PI/2 + g) % (2*PI))
     
 
 
@@ -119,6 +120,6 @@ def drawParticles(particles):
 
 
 if __name__ == "__main__":
-    random.seed(17) # seed RNG for reproduceable results
+    #random.seed(17) # seed RNG for reproduceable results
     main()
 
