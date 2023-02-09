@@ -3,14 +3,13 @@ from math import sin, cos
 from numpy import mean, std
 import robot
 import time
-import random
 
 #global variables
 pause = 1             # pause delay in seconds
 num_particles = 100   # number of particle predictions
-sigma_e = 0.1   # standard deviation in cm      - error of driving too far/short
-sigma_f = 0.01  # standard deviation in radians - error of turning during forward motion
-sigma_g = 0.01  # standard deviation in radians - error of turning too far/short
+sigma_e = 0.01   # standard deviation in cm      - error of driving too far/short
+sigma_f = 0.006  # standard deviation in radians - error of turning during forward motion
+sigma_g = 0.006  # standard deviation in radians - error of turning too far/short
 
 def main():
     r = robot.robot()
@@ -32,19 +31,14 @@ def main():
 
                 # move robot forward
                 r.forward(10)
-                
                 drawParticles(r.particles)
                 printMetrics(r.metrics())
-
                 time.sleep(pause)
 
             # spin robot
             r.spinL(90)
-
-            #update particle predictions for spin
             drawParticles(r.particles)
             printMetrics(r.metrics())
-
             time.sleep(pause)
 
         
@@ -62,12 +56,14 @@ def main():
 
     
 def printMetrics(metrics):
-    (mu_x,mu_y,_),(sigma_x,sigma_y,_) = metrics
+    ((mu_x,mu_y,mu_theta),(sigma_x,sigma_y,sigma_theta)) = metrics
     mx = "{:.3f}".format(mu_x)
     my = "{:.3f}".format(mu_y)
+    mt = "{:.3f}".format(mu_theta)
     sx = "{:.3f}".format(sigma_x)
     sy = "{:.3f}".format(sigma_y)
-    print(f"Mean position: ({mx},{my}), Standard Deviation: ({sx},{sy})")
+    st = "{:.3f}".format(sigma_theta)
+    print(f"Mean position: (x={mx}, y={my}, theta={mt}), Standard Deviation: (x={sx}, y={sy}, theta={st})")
 
 
 def drawLine(line):
@@ -89,7 +85,7 @@ def drawLine(line):
 def transformPoint(point):
     """
     converts point from robot coordinates to screen coordinates
-    point :: 3-tuple (x,y,theta)
+    point :: tuple ((x,y,theta),weight)
     """
     ((x,y,theta), _) = point
 
@@ -98,7 +94,7 @@ def transformPoint(point):
 def drawParticles(particles):
     """
     Wrapper for web interface\n
-    particles :: list of 3-tuples [(x,y,theta)]
+    particles :: list of tuples [((x,y,theta),weight)]
     """
 
     #transform from robot coordinates to screen coordinates
