@@ -1,5 +1,5 @@
 from math import pi as PI
-from math import sin, cos
+from math import sin, cos, atan2, sqrt
 import time
 import brickpi3
 
@@ -28,26 +28,6 @@ class robot:
         # constants calculated from configurable constants (should not be changed)
         self.wheel_circ = 2 * PI * self.wheel_radius            # circumference of robot wheels
         self.wheel_speed = self.wheel_circ * self.dps / 360     # speed wheels should turn
-
-
-    #========== Private methods - Do not call directly ===========
-    def private_spin(self, direction, degrees):
-        """
-        PRIVATE METHOD - DO NOT CALL THIS METHOD\n
-        Use spinL and spinR instead
-        """
-
-        # direction = 1 for spin left, -1 for spin right
-        rads = degrees * PI/180
-        distance = rads * self.robot_width / 2
-        t = distance / self.wheel_speed + self.spin_tuning
-        self.BP.set_motor_dps(self.L, direction * self.dps)
-        self.BP.set_motor_dps(self.R, -direction * self.dps)
-
-        time.sleep(t)
-
-        self.stop()
-        return
 
 
     #=========== Public methods ===========
@@ -101,11 +81,25 @@ class robot:
         self.stop()
         return
 
+    def spin(self, radians):
+
+        # direction = 1 for spin left, -1 for spin right
+        direction = 1 if radians >= 0 else -1
+        distance = radians * self.robot_width / 2
+        t = distance / self.wheel_speed + self.spin_tuning
+        self.BP.set_motor_dps(self.L, direction * self.dps)
+        self.BP.set_motor_dps(self.R, -direction * self.dps)
+
+        time.sleep(t)
+
+        self.stop()
+        return
+
     def spinL(self, degrees):
         """
         Spins 'degrees' degrees to the left in place
         """
-        self.private_spin(1, degrees)
+        self.private_spin(1, degrees * PI / 180)
 
         return
 
@@ -113,7 +107,23 @@ class robot:
         """
         Spins 'degrees' degrees to the right in place
         """
-        self.private_spin(-1, degrees)
+        self.private_spin(-1, degrees * PI / 180)
 
         return
 
+    def navigateToWaypoint(self, Wx, Wy):        
+        x = 0 # TODO: Replace with estimated positions
+        y = 0
+        theta = 0 
+
+        dx = Wx - x
+        dy = Wy - y
+
+        alpha = atan2(dy,dx)
+
+        beta = alpha - theta
+        d = sqrt(dx**2 + dy**2)
+
+        self.spin(beta)
+        self.forward(d)
+        return
