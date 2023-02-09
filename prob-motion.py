@@ -32,19 +32,21 @@ def main():
 
                 # move robot forward
                 r.forward(10)
-                time.sleep(pause)
-
+                
                 # update particle predictions for forward movement
                 particles = list(map(updateParticleForward, particles))
                 drawParticles(particles)
 
+                time.sleep(pause)
+
             # spin robot
             r.spinL(90)
-            time.sleep(pause)
 
             #update particle predictions for spin
             particles = list(map(updateParticleSpin, particles))
             drawParticles(particles)
+
+            time.sleep(pause)
 
 
     except KeyboardInterrupt: # except the program gets interrupted by Ctrl+C on the keyboard.
