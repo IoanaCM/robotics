@@ -115,15 +115,19 @@ class robot:
         """
         Drives straight forward 'distance' cm
         """
-        t = distance / self.wheel_speed + self.forward_tuning
-        self.BP.set_motor_dps(self.L, self.dps)
-        self.BP.set_motor_dps(self.R, self.dps)
+        direction = 1 if distance >=0 else -1
+        t = abs(distance) / self.wheel_speed + self.forward_tuning
+        if t < 0:
+            direction = direction * -1
+            t = t * -1
+        self.BP.set_motor_dps(self.L, direction * self.dps)
+        self.BP.set_motor_dps(self.R, direction * self.dps)
 
         time.sleep(t)
         self.stop()
 
-        new_particles = [self.updateParticleSpin(p,distance) for p in self.particles]
-        self.particles = new_particles
+        #new_particles = [self.updateParticleSpin(p,distance) for p in self.particles]
+        #self.particles = new_particles
         return
         
 
@@ -133,14 +137,17 @@ class robot:
         direction = 1 if radians >= 0 else -1
         distance = abs(radians) * self.robot_width / 2
         t = distance / self.wheel_speed + self.spin_tuning
+        if t < 0:
+            direction = direction * -1
+            t = t * -1
         self.BP.set_motor_dps(self.L, direction * self.dps)
         self.BP.set_motor_dps(self.R, -direction * self.dps)
 
         time.sleep(t)
         self.stop()
 
-        new_particles = [self.updateParticleSpin(p,radians) for p in self.particles]
-        self.particles = new_particles
+        #new_particles = [self.updateParticleSpin(p,radians) for p in self.particles]
+        #self.particles = new_particles
         return
 
     def spinL(self, degrees):

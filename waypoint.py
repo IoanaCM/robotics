@@ -11,8 +11,11 @@ def main():
 
     try:
         
-
-        r.navigateToWaypoint(20,20)
+        while True:
+            
+            x = float(input("Enter x: "))
+            y = float(input("Enter y: "))
+            r.navigateToWaypoint(x, y)
 
 
     except KeyboardInterrupt: # except the program gets interrupted by Ctrl+C on the keyboard.
