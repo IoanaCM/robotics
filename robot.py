@@ -41,7 +41,7 @@ class robot:
 
 
     #========== Private methods - Do not call directly ===========
-    def updateParticleForward(self, distance, particle):
+    def updateParticleForward(self, particle, distance):
         """
         Update particle prediction for forward movement of 10cm
         particle :: tuple ((x,y,theta),weight)
@@ -53,7 +53,7 @@ class robot:
         return ((x + (distance + e) * cos(theta), y + (distance + e) * sin(theta), theta + f), weight)
 
 
-    def updateParticleSpin(self, radians, particle):
+    def updateParticleSpin(self, particle, radians):
         """
         Update particle prediction for left spin PI/2 radians
         particle :: tuple ((x,y,theta),weight)
@@ -71,6 +71,10 @@ class robot:
     def getY(self, particle):
         ((x,y,theta),weight) = particle
         return y
+
+    def getTheta(self, particle):
+        ((x,y,theta),weight) = particle
+        return theta
 
 
     #=========== Public methods ===========
@@ -117,13 +121,10 @@ class robot:
         """
         direction = 1 if distance >=0 else -1
         t = abs(distance) / self.wheel_speed + self.forward_tuning
-        if t < 0:
-            direction = direction * -1
-            t = t * -1
         self.BP.set_motor_dps(self.L, direction * self.dps)
         self.BP.set_motor_dps(self.R, direction * self.dps)
 
-        time.sleep(t)
+        time.sleep(max(0,t))
         self.stop()
 
         new_particles = [self.updateParticleForward(p,distance) for p in self.particles]
@@ -137,13 +138,10 @@ class robot:
         direction = 1 if radians >= 0 else -1
         distance = abs(radians) * self.robot_width / 2
         t = distance / self.wheel_speed + self.spin_tuning
-        if t < 0:
-            direction = direction * -1
-            t = t * -1
         self.BP.set_motor_dps(self.L, direction * self.dps)
         self.BP.set_motor_dps(self.R, -direction * self.dps)
 
-        time.sleep(t)
+        time.sleep(max(0,t))
         self.stop()
 
         new_particles = [self.updateParticleSpin(p,radians) for p in self.particles]
@@ -191,4 +189,5 @@ class robot:
 
         xs = list(map(self.getX, particles))
         ys = list(map(self.getY, particles))
+        thetas = list(map(self.getTheta, particles))
         return ((mean(xs), mean(ys)),(std(xs), std(ys)))
