@@ -27,7 +27,7 @@ def main():
         drawLine((0,40,0,0))
         #draw initial particles
         drawParticles(particles)
-        mx,my,sx,sy = metrics(particles)
+        (mx,my),(sx,sy) = metrics(particles)
         print(f"Mean position: ({mx},{my}), Standard Deviation: ({sx},{sy})")
 
         for i in range(0,4):
@@ -39,7 +39,8 @@ def main():
                 # update particle predictions for forward movement
                 particles = list(map(updateParticleForward, particles))
                 drawParticles(particles)
-                print(metrics(particles))
+                (mx,my),(sx,sy) = metrics(particles)
+                print(f"Mean position: ({mx},{my}), Standard Deviation: ({sx},{sy})")
 
                 time.sleep(pause)
 
@@ -49,7 +50,8 @@ def main():
             #update particle predictions for spin
             particles = list(map(updateParticleSpin, particles))
             drawParticles(particles)
-            print(metrics(particles))
+            (mx,my),(sx,sy) = metrics(particles)
+            print(f"Mean position: ({mx},{my}), Standard Deviation: ({sx},{sy})")
 
             time.sleep(pause)
 
@@ -63,7 +65,6 @@ def main():
         print(e)
 
     finally:
-        print("finally")
         r.shutdown()
         return
 
