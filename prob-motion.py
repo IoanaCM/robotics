@@ -65,46 +65,15 @@ def main():
         r.shutdown()
         return
 
-
-def updateParticleForward(particle):
-    """
-    Update particle prediction for forward movement of 10cm
-    particle :: 3-tuple (x,y,theta)
-    """
-    x,y,theta = particle
-
-    e = random.gauss(0,sigma_e)
-    f = random.gauss(0,sigma_f)
-    return (x + (10 + e) * cos(theta), y + (10 + e) * sin(theta), theta + f)
-
-def updateParticleSpin(particle):
-    """
-    Update particle prediction for left spin PI/2 radians
-    particle :: 3-tuple (x,y,theta)
-    """
-    x,y,theta = particle
-
-    g = random.gauss(0,sigma_g)
-    return (x, y, (theta + PI/2 + g) % (2*PI))
     
-def printMetrics(particles):
-    (mu_x,mu_y),(sigma_x,sigma_y) = metrics(particles)
+def printMetrics(metrics):
+    (mu_x,mu_y),(sigma_x,sigma_y) = metrics
     mx = "{:.3f}".format(mu_x)
     my = "{:.3f}".format(mu_y)
     sx = "{:.3f}".format(sigma_x)
     sy = "{:.3f}".format(sigma_y)
     print(f"Mean position: ({mx},{my}), Standard Deviation: ({sx},{sy})")
 
-def metrics(particles):
-    """
-    Reports mean and standard deviation of particles position array
-    particles :: list of 3-tuple [(x,y,theta)]
-    Return ((mu_X, mu_y), (sigma_x, sigma_y))
-    """
-
-    xs = list(map(fst, particles))
-    ys = list(map(snd, particles))
-    return ((mean(xs), mean(ys)),(std(xs), std(ys)))
 
 def drawLine(line):
     """
@@ -141,14 +110,6 @@ def drawParticles(particles):
     transformed_particles = list(map(transformPoint, particles))
     print("drawParticles:" + str(transformed_particles))
     return
-
-def fst(particle):
-    x,y,theta = particle
-    return x
-
-def snd(particle):
-    x,y,theta = particle
-    return y
 
 
 if __name__ == "__main__":

@@ -1,6 +1,8 @@
 from math import pi as PI
-from math import sin, cos, atan2, sqrt
+from math import sin, cos, sqrt, atan2
+from numpy import mean, std
 import time
+import random
 import brickpi3
 
 # Class specialised to our robot design
@@ -28,6 +30,47 @@ class robot:
         # constants calculated from configurable constants (should not be changed)
         self.wheel_circ = 2 * PI * self.wheel_radius            # circumference of robot wheels
         self.wheel_speed = self.wheel_circ * self.dps / 360     # speed wheels should turn
+
+
+        # particle estimates for position
+        num_particles = 100
+        self.particles = [((0,0,0), 1/num_particles)] * num_particles
+        self.sigma_e = 0.1   # standard deviation in cm      - error of driving too far/short, per unit forward movement
+        self.sigma_f = 0.01  # standard deviation in radians - error of turning during forward motion, per unit forward movement
+        self.sigma_g = 0.01  # standard deviation in radians - error of turning too far/short, per unit radian spin
+
+
+    #========== Private methods - Do not call directly ===========
+    def updateParticleForward(self, distance, particle):
+        """
+        Update particle prediction for forward movement of 10cm
+        particle :: tuple ((x,y,theta),weight)
+        """
+        ((x,y,theta),weight) = particle
+
+        e = random.gauss(0,self.sigma_e)
+        f = random.gauss(0,self.sigma_f)
+        return ((x + (10 + e) * cos(theta), y + (10 + e) * sin(theta), theta + f), weight)
+
+
+    def updateParticleSpin(self, radians, particle):
+        """
+        Update particle prediction for left spin PI/2 radians
+        particle :: tuple ((x,y,theta),weight)
+        """
+        ((x,y,theta), weight) = particle
+
+        g = random.gauss(0,self.sigma_g)
+        return ((x, y, (theta + PI/2 + g) % (2*PI)), weight)
+
+
+    def getX(self, particle):
+        ((x,y,theta),weight) = particle
+        return x
+
+    def getY(self, particle):
+        ((x,y,theta),weight) = particle
+        return y
 
 
     #=========== Public methods ===========
@@ -79,7 +122,9 @@ class robot:
         time.sleep(t)
 
         self.stop()
+        self.particles = list(map(self.updateParticleForward, distance, self.particles))
         return
+        
 
     def spin(self, radians):
 
@@ -93,13 +138,14 @@ class robot:
         time.sleep(t)
 
         self.stop()
+        self.particles = list(map(self.updateParticleSpin, radians, self.particles))
         return
 
     def spinL(self, degrees):
         """
         Spins 'degrees' degrees to the left in place
         """
-        self.private_spin(1, degrees * PI / 180)
+        self.spin(degrees * PI / 180)
 
         return
 
@@ -107,7 +153,7 @@ class robot:
         """
         Spins 'degrees' degrees to the right in place
         """
-        self.private_spin(-1, degrees * PI / 180)
+        self.spin(-degrees * PI / 180)
 
         return
 
@@ -127,3 +173,15 @@ class robot:
         self.spin(beta)
         self.forward(d)
         return
+
+
+    def metrics(self, particles):
+        """
+        Reports mean and standard deviation of particles position array
+        particles :: list of tuples [((x,y,theta),weight)]
+        Return ((mu_X, mu_y), (sigma_x, sigma_y))
+        """
+
+        xs = list(map(self.getX, particles))
+        ys = list(map(self.getY, particles))
+        return ((mean(xs), mean(ys)),(std(xs), std(ys)))
