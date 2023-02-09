@@ -17,8 +17,6 @@ def main():
     r.setup()
 
     try:
-        # initialise particles array
-        particles = [(0,0,0)] * num_particles
 
         #draw ideal square
         drawLine((0,0,40,0))
@@ -26,8 +24,8 @@ def main():
         drawLine((40,40,0,40))
         drawLine((0,40,0,0))
         #draw initial particles
-        drawParticles(particles)
-        printMetrics(particles)
+        drawParticles(r.particles)
+        printMetrics(r.particles)
 
         for i in range(0,4):
             for j in range(0,4):
@@ -35,10 +33,8 @@ def main():
                 # move robot forward
                 r.forward(10)
                 
-                # update particle predictions for forward movement
-                particles = list(map(updateParticleForward, particles))
-                drawParticles(particles)
-                printMetrics(particles)
+                drawParticles(r.particles)
+                printMetrics(r.particles)
 
                 time.sleep(pause)
 
@@ -46,9 +42,8 @@ def main():
             r.spinL(90)
 
             #update particle predictions for spin
-            particles = list(map(updateParticleSpin, particles))
-            drawParticles(particles)
-            printMetrics(particles)
+            drawParticles(r.particles)
+            printMetrics(r.particles)
 
             time.sleep(pause)
 

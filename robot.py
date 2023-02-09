@@ -120,9 +120,10 @@ class robot:
         self.BP.set_motor_dps(self.R, self.dps)
 
         time.sleep(t)
-
         self.stop()
-        self.particles = list(map(self.updateParticleForward, distance, self.particles))
+
+        new_particles = [self.updateParticleSpin(p,distance) for p in self.particles]
+        self.particles = new_particles
         return
         
 
@@ -130,15 +131,16 @@ class robot:
 
         # direction = 1 for spin left, -1 for spin right
         direction = 1 if radians >= 0 else -1
-        distance = radians * self.robot_width / 2
+        distance = abs(radians) * self.robot_width / 2
         t = distance / self.wheel_speed + self.spin_tuning
         self.BP.set_motor_dps(self.L, direction * self.dps)
         self.BP.set_motor_dps(self.R, -direction * self.dps)
 
         time.sleep(t)
-
         self.stop()
-        self.particles = list(map(self.updateParticleSpin, radians, self.particles))
+
+        new_particles = [self.updateParticleSpin(p,radians) for p in self.particles]
+        self.particles = new_particles
         return
 
     def spinL(self, degrees):
@@ -146,7 +148,6 @@ class robot:
         Spins 'degrees' degrees to the left in place
         """
         self.spin(degrees * PI / 180)
-
         return
 
     def spinR(self, degrees):
@@ -154,7 +155,6 @@ class robot:
         Spins 'degrees' degrees to the right in place
         """
         self.spin(-degrees * PI / 180)
-
         return
 
     def navigateToWaypoint(self, Wx, Wy):        
