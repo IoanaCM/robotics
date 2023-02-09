@@ -1,6 +1,7 @@
 from math import pi as PI
 from math import sin, cos, sqrt, atan2
 from numpy import mean, std
+from statistics import median
 import time
 import random
 import brickpi3
@@ -16,6 +17,8 @@ class robot:
         # design constants
         self.L = self.BP.PORT_A     # Port used for left wheel
         self.R = self.BP.PORT_D     # Port used for right wheel
+        self.sonar = self.BP.PORT_2
+        self.BP.set_sensor_type(self.sonar, self.BP.SENSOR_TYPE.NXT_ULTRASONIC)
 
         # calibration constants
         self.wheel_radius = 2.8     # radius of robot wheels (cm)
@@ -39,6 +42,8 @@ class robot:
         self.sigma_f = 0.01  # standard deviation in radians - error of turning during forward motion, per unit forward movement
         self.sigma_g = 0.01  # standard deviation in radians - error of turning too far/short, per unit radian spin
 
+        # sensor readings queue
+        self.sensor_readings = []
 
     #========== Private methods - Do not call directly ===========
     def updateParticleForward(self, particle, distance):
@@ -162,10 +167,8 @@ class robot:
         self.spin(-degrees * PI / 180)
         return
 
-    def navigateToWaypoint(self, Wx, Wy):        
-        x = 0 # TODO: Replace with estimated positions
-        y = 0
-        theta = 0 
+    def navigateToWaypoint(self, Wx, Wy):   
+        (x, y, theta), (_, _, _) = self.metrics()
 
         dx = Wx - x
         dy = Wy - y
@@ -180,14 +183,25 @@ class robot:
         return
 
 
-    def metrics(self, particles):
+    def metrics(self):
         """
         Reports mean and standard deviation of particles position array
         particles :: list of tuples [((x,y,theta),weight)]
         Return ((mu_X, mu_y), (sigma_x, sigma_y))
         """
 
-        xs = list(map(self.getX, particles))
-        ys = list(map(self.getY, particles))
-        thetas = list(map(self.getTheta, particles))
-        return ((mean(xs), mean(ys)),(std(xs), std(ys)))
+        xs = list(map(self.getX, self.particles))
+        ys = list(map(self.getY, self.particles))
+        thetas = list(map(self.getTheta, self.particles))
+        return ((mean(xs), mean(ys), mean(thetas)),(std(xs), std(ys), std(thetas)))
+
+    def get_sensor_reading(self):
+        try:
+            r = self.BP.get_sensor(self.sonar)
+            self.sensor_readings.append(r)
+            if len(self.sensor_readings) > 5:
+                self.sensor_readings.pop(0)
+            return median(self.sensor_readings)                 
+        except brickpi3.SensorError as error:
+            print(error)
+            return

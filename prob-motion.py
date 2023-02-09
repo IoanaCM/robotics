@@ -25,7 +25,7 @@ def main():
         drawLine((0,40,0,0))
         #draw initial particles
         drawParticles(r.particles)
-        printMetrics(r.particles)
+        printMetrics(r.metrics())
 
         for i in range(0,4):
             for j in range(0,4):
@@ -34,7 +34,7 @@ def main():
                 r.forward(10)
                 
                 drawParticles(r.particles)
-                printMetrics(r.particles)
+                printMetrics(r.metrics())
 
                 time.sleep(pause)
 
@@ -43,7 +43,7 @@ def main():
 
             #update particle predictions for spin
             drawParticles(r.particles)
-            printMetrics(r.particles)
+            printMetrics(r.metrics())
 
             time.sleep(pause)
 
@@ -62,7 +62,7 @@ def main():
 
     
 def printMetrics(metrics):
-    (mu_x,mu_y),(sigma_x,sigma_y) = metrics
+    (mu_x,mu_y,_),(sigma_x,sigma_y,_) = metrics
     mx = "{:.3f}".format(mu_x)
     my = "{:.3f}".format(mu_y)
     sx = "{:.3f}".format(sigma_x)
@@ -91,7 +91,7 @@ def transformPoint(point):
     converts point from robot coordinates to screen coordinates
     point :: 3-tuple (x,y,theta)
     """
-    x,y,theta = point
+    ((x,y,theta), _) = point
 
     return (10 * x + 100, -y * 10 + 500, theta)
 

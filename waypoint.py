@@ -12,7 +12,8 @@ def main():
     try:
         
         while True:
-            
+            (x,y,_), (_,_,_) = r.metrics()
+            print("I think I am at: " + str(x) + " " + str(y))
             x = float(input("Enter x: "))
             y = float(input("Enter y: "))
             r.navigateToWaypoint(x, y)
