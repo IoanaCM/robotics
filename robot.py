@@ -48,9 +48,9 @@ class robot:
         """
         ((x,y,theta),weight) = particle
 
-        e = random.gauss(0,self.sigma_e)
-        f = random.gauss(0,self.sigma_f)
-        return ((x + (10 + e) * cos(theta), y + (10 + e) * sin(theta), theta + f), weight)
+        e = random.gauss(0, distance * self.sigma_e)
+        f = random.gauss(0, distance * self.sigma_f)
+        return ((x + (distance + e) * cos(theta), y + (distance + e) * sin(theta), theta + f), weight)
 
 
     def updateParticleSpin(self, radians, particle):
@@ -60,8 +60,8 @@ class robot:
         """
         ((x,y,theta), weight) = particle
 
-        g = random.gauss(0,self.sigma_g)
-        return ((x, y, (theta + PI/2 + g) % (2*PI)), weight)
+        g = random.gauss(0, radians * self.sigma_g)
+        return ((x, y, (theta + radians + g) % (2*PI)), weight)
 
 
     def getX(self, particle):
@@ -126,8 +126,8 @@ class robot:
         time.sleep(t)
         self.stop()
 
-        #new_particles = [self.updateParticleSpin(p,distance) for p in self.particles]
-        #self.particles = new_particles
+        new_particles = [self.updateParticleSpin(p,distance) for p in self.particles]
+        self.particles = new_particles
         return
         
 
@@ -146,8 +146,8 @@ class robot:
         time.sleep(t)
         self.stop()
 
-        #new_particles = [self.updateParticleSpin(p,radians) for p in self.particles]
-        #self.particles = new_particles
+        new_particles = [self.updateParticleSpin(p,radians) for p in self.particles]
+        self.particles = new_particles
         return
 
     def spinL(self, degrees):
