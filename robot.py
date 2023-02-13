@@ -1,7 +1,7 @@
 from math import pi as PI
 from math import sin, cos, sqrt, atan2
-from numpy import mean, std
-from statistics import median
+import numpy as np
+from statistics import median, mean
 import time
 import random
 import brickpi3
@@ -46,6 +46,13 @@ class robot:
         self.sensor_readings = []
 
     #========== Private methods - Do not call directly ===========
+    def circmean(self, thetas):
+        a = mean(np.sin(thetas))
+        b = mean(np.cos(thetas))
+        x = atan2(a, b)
+        z = x if x >= 0 else x + 2 * PI
+        return z
+
     def updateParticleForward(self, particle, distance):
         """
         Update particle prediction for forward movement of 10cm
@@ -53,9 +60,10 @@ class robot:
         """
         ((x,y,theta),weight) = particle
 
-        e = random.gauss(0, distance * self.sigma_e)
-        f = random.gauss(0, distance * self.sigma_f)
-        return ((x + (distance + e) * cos(theta), y + (distance + e) * sin(theta), theta + f), weight)
+        e = random.gauss(0, self.sigma_e)
+        f = random.gauss(0, self.sigma_f)
+        print("theta: " + str(theta) + " new theta: " +   str((theta + f) % (2*PI) ))
+        return ((x + (distance + e) * cos(theta), y + (distance + e) * sin(theta), (theta + f) % (2*PI)), weight)
 
 
     def updateParticleSpin(self, particle, radians):
@@ -65,7 +73,8 @@ class robot:
         """
         ((x,y,theta), weight) = particle
 
-        g = random.gauss(0, radians * self.sigma_g)
+        g = random.gauss(0, self.sigma_g)
+        print("theta: " + str(theta) + " new theta: " +   str((theta + radians + g) % (2*PI)))
         return ((x, y, (theta + radians + g) % (2*PI)), weight)
 
 
@@ -178,6 +187,9 @@ class robot:
         beta = alpha - theta
         d = sqrt(dx**2 + dy**2)
 
+        print("A Moving: " + str(d) + " Turning: " + str(beta))
+        beta = beta if beta <= PI else beta - 2*PI
+        print("B Moving: " + str(d) + " Turning: " + str(beta))
         self.spin(beta)
         self.forward(d)
         return
@@ -193,7 +205,7 @@ class robot:
         xs = list(map(self.getX, self.particles))
         ys = list(map(self.getY, self.particles))
         thetas = list(map(self.getTheta, self.particles))
-        return ((mean(xs), mean(ys), mean(thetas)),(std(xs), std(ys), std(thetas)))
+        return ((mean(xs), mean(ys), self.circmean(thetas)),(np.std(xs), np.std(ys), np.std(thetas)))
 
     def get_sensor_reading(self):
         try:
