@@ -1,24 +1,33 @@
 from math import pi as PI
 from math import sin, cos, sqrt, atan2
-import numpy as np
-from statistics import median, mean
+from numpy import mean, std
+from statistics import median
 import time
 import random
-import brickpi3
 
-# Class specialised to our robot design
+# Mock robot designed to simulate all aspects of code except the physical
+# turning of motors. This allows testing code without needing the robot
+# with you, and no longer requires the brickpi3 module installed.
 
-class robot:
+# The signatures of all functions are identical to that of the true robot
+# class. As a result to simulate code without the robot, simply change 
+# the following 2 lines of code:
+#
+# import robot        ===>   import mockRobot
+# r = robot.robot()   ===>   r = mockRobot.mockRobot()
+#
+# Since mockRobot no longer drives motors, many functions now do nothing,
+# but they are still included and callable, specifically so no additional
+# code changes are required.
+#
+# The mockRobot class must be kept up to date with the real robot class
+# any changes to robot should be reflected in mockRobot as the exact same
+# code but with any lines referencing self.BP removed
+
+class mockRobot:
 
     #=========== Constructor function ===========
     def __init__(self):
-        self.BP = brickpi3.BrickPi3()
-
-        # design constants
-        self.L = self.BP.PORT_A     # Port used for left wheel
-        self.R = self.BP.PORT_D     # Port used for right wheel
-        self.sonar = self.BP.PORT_2
-        self.BP.set_sensor_type(self.sonar, self.BP.SENSOR_TYPE.NXT_ULTRASONIC)
 
         # calibration constants
         self.wheel_radius = 2.8     # radius of robot wheels (cm)
@@ -42,17 +51,8 @@ class robot:
         self.sigma_f = 0.01  # standard deviation in radians - error of turning during forward motion, per unit forward movement
         self.sigma_g = 0.01  # standard deviation in radians - error of turning too far/short, per unit radian spin
 
-        # sensor readings queue
-        self.sensor_readings = []
 
     #========== Private methods - Do not call directly ===========
-    def circmean(self, thetas):
-        a = mean(np.sin(thetas))
-        b = mean(np.cos(thetas))
-        x = atan2(a, b)
-        z = x if x >= 0 else x + 2 * PI
-        return z
-
     def updateParticleForward(self, particle, distance):
         """
         Update particle prediction for forward movement of 10cm
@@ -60,10 +60,9 @@ class robot:
         """
         ((x,y,theta),weight) = particle
 
-        e = random.gauss(0, self.sigma_e)
-        f = random.gauss(0, self.sigma_f)
-        print("theta: " + str(theta) + " new theta: " +   str((theta + f) % (2*PI) ))
-        return ((x + (distance + e) * cos(theta), y + (distance + e) * sin(theta), (theta + f) % (2*PI)), weight)
+        e = random.gauss(0, distance * self.sigma_e)
+        f = random.gauss(0, distance * self.sigma_f)
+        return ((x + (distance + e) * cos(theta), y + (distance + e) * sin(theta), theta + f), weight)
 
 
     def updateParticleSpin(self, particle, radians):
@@ -73,8 +72,7 @@ class robot:
         """
         ((x,y,theta), weight) = particle
 
-        g = random.gauss(0, self.sigma_g)
-        print("theta: " + str(theta) + " new theta: " +   str((theta + radians + g) % (2*PI)))
+        g = random.gauss(0, radians * self.sigma_g)
         return ((x, y, (theta + radians + g) % (2*PI)), weight)
 
 
@@ -97,19 +95,6 @@ class robot:
         """
         Initialises the motors. Should be called before using other functions
         """
-
-        try:
-            #reset servo encoders
-            self.BP.offset_motor_encoder(self.L, self.BP.get_motor_encoder(self.L))
-            self.BP.offset_motor_encoder(self.R, self.BP.get_motor_encoder(self.R))
-
-            # Set power limits on motors
-            self.BP.set_motor_limits(self.L, 50)
-            self.BP.set_motor_limits(self.R, 50)
-
-        except IOError as error:
-            print(error)
-
         return
 
     def shutdown(self):
@@ -119,15 +104,12 @@ class robot:
         """
         self.stop()
         time.sleep(0.5)
-        self.BP.reset_all()
         return
 
     def stop(self):
         """
         Stops both motors turning
         """
-        self.BP.set_motor_dps(self.L, 0)
-        self.BP.set_motor_dps(self.R, 0)
         return
 
     def forward(self, distance):
@@ -136,8 +118,6 @@ class robot:
         """
         direction = 1 if distance >=0 else -1
         t = abs(distance) / self.wheel_speed + self.forward_tuning
-        self.BP.set_motor_dps(self.L, direction * self.dps)
-        self.BP.set_motor_dps(self.R, direction * self.dps)
 
         time.sleep(max(0,t))
         self.stop()
@@ -158,8 +138,6 @@ class robot:
         direction = 1 if radians >= 0 else -1
         distance = abs(radians) * self.robot_width / 2
         t = distance / self.wheel_speed + self.spin_tuning
-        self.BP.set_motor_dps(self.L, direction * self.dps)
-        self.BP.set_motor_dps(self.R, -direction * self.dps)
 
         time.sleep(max(0,t))
         self.stop()
@@ -194,9 +172,6 @@ class robot:
         beta = alpha - theta
         d = sqrt(dx**2 + dy**2)
 
-        print("A Moving: " + str(d) + " Turning: " + str(beta))
-        beta = beta if beta <= PI else beta - 2*PI
-        print("B Moving: " + str(d) + " Turning: " + str(beta))
         self.spin(beta)
         self.forward(d)
         return
@@ -212,15 +187,8 @@ class robot:
         xs = list(map(self.getX, self.particles))
         ys = list(map(self.getY, self.particles))
         thetas = list(map(self.getTheta, self.particles))
-        return ((mean(xs), mean(ys), self.circmean(thetas)),(np.std(xs), np.std(ys), np.std(thetas)))
+        return ((mean(xs), mean(ys), mean(thetas)),(std(xs), std(ys), std(thetas)))
+
 
     def get_sensor_reading(self):
-        try:
-            r = self.BP.get_sensor(self.sonar)
-            self.sensor_readings.append(r)
-            if len(self.sensor_readings) > 5:
-                self.sensor_readings.pop(0)
-            return median(self.sensor_readings)                 
-        except brickpi3.SensorError as error:
-            print(error)
-            return
+        return 0
