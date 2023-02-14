@@ -38,9 +38,9 @@ class robot:
         # particle estimates for position
         num_particles = 100
         self.particles = [((0,0,0), 1/num_particles)] * num_particles
-        self.sigma_e = 0.1   # standard deviation in cm      - error of driving too far/short, per unit forward movement
-        self.sigma_f = 0.01  # standard deviation in radians - error of turning during forward motion, per unit forward movement
-        self.sigma_g = 0.01  # standard deviation in radians - error of turning too far/short, per unit radian spin
+        self.sigma_e = 0.01   # standard deviation in cm      - error of driving too far/short, per unit forward movement
+        self.sigma_f = 0.006  # standard deviation in radians - error of turning during forward motion, per unit forward movement
+        self.sigma_g = 0.006  # standard deviation in radians - error of turning too far/short, per unit radian spin
 
         # sensor readings queue
         self.sensor_readings = []
@@ -60,9 +60,9 @@ class robot:
         """
         ((x,y,theta),weight) = particle
 
-        e = random.gauss(0, self.sigma_e)
-        f = random.gauss(0, self.sigma_f)
-        print("theta: " + str(theta) + " new theta: " +   str((theta + f) % (2*PI) ))
+        e = random.gauss(0, distance * self.sigma_e)
+        f = random.gauss(0, distance * self.sigma_f)
+        #print("theta: " + str(theta) + " new theta: " +   str((theta + f) % (2*PI) ))
         return ((x + (distance + e) * cos(theta), y + (distance + e) * sin(theta), (theta + f) % (2*PI)), weight)
 
 
@@ -73,8 +73,7 @@ class robot:
         """
         ((x,y,theta), weight) = particle
 
-        g = random.gauss(0, self.sigma_g)
-        print("theta: " + str(theta) + " new theta: " +   str((theta + radians + g) % (2*PI)))
+        g = random.gauss(0, radians * self.sigma_g)
         return ((x, y, (theta + radians + g) % (2*PI)), weight)
 
 
@@ -191,13 +190,11 @@ class robot:
 
         alpha = atan2(dy,dx)
 
-        beta = alpha - theta
+        beta = (alpha - theta) % (2*PI)
+        beta = beta if beta <= PI else beta - 2*PI
+        
         d = sqrt(dx**2 + dy**2)
-
-        print("A Moving: " + str(d) + " Turning: " + str(beta))
-        #beta = beta if beta <= PI else beta - 2*PI
-        beta = beta % (2*PI)
-        print("B Moving: " + str(d) + " Turning: " + str(beta))
+        
         self.spin(beta)
         self.forward(d)
         return
