@@ -149,7 +149,7 @@ class robot:
 
     def spin(self, radians):
         """
-        Simulates spinning 'radians' radians in place\n
+        Spins 'radians' radians in place\n
         A positive value for radians is a counter-clockwise (left) spin\n
         A negative value for radians is a clockwise (right) spin
         """
@@ -195,7 +195,8 @@ class robot:
         d = sqrt(dx**2 + dy**2)
 
         print("A Moving: " + str(d) + " Turning: " + str(beta))
-        beta = beta if beta <= PI else beta - 2*PI
+        #beta = beta if beta <= PI else beta - 2*PI
+        beta = beta % (2*PI)
         print("B Moving: " + str(d) + " Turning: " + str(beta))
         self.spin(beta)
         self.forward(d)

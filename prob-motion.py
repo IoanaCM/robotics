@@ -7,9 +7,9 @@ import time
 #global variables
 pause = 1             # pause delay in seconds
 num_particles = 100   # number of particle predictions
-sigma_e = 0.01   # standard deviation in cm      - error of driving too far/short
+sigma_e = 0.01   # standard deviation in cm      - error of driving too far/short during forward movement
 sigma_f = 0.006  # standard deviation in radians - error of turning during forward motion
-sigma_g = 0.006  # standard deviation in radians - error of turning too far/short
+sigma_g = 0.006  # standard deviation in radians - error of turning too far/short during spin
 
 def main():
     r = robot.robot()
