@@ -1,0 +1,21 @@
+# Mock robot designed to simulate all aspects of code except the physical
+# turning of motors. This allows testing code without needing the robot
+# with you, and no longer requires the brickpi3 module installed.
+#
+# The signatures of all functions are identical to that of the true robot
+# class. As a result to simulate code without the robot, simply change 
+# the following 2 lines of code:
+#
+# import robot        ===>   import mockRobot
+# r = robot.robot()   ===>   r = mockRobot.robot()
+#
+# Since mockRobot no longer drives motors, many functions now do nothing,
+# but they are still included and callable, specifically so no additional
+# code changes are required.
+#
+# The mockRobot class must be kept up to date with the real robot class
+# any changes to robot should be reflected in mockRobot as the exact same
+# code but with any lines referencing self.BP removed
+#
+# This may be automated by running the Makefile with make mockRobot (or just make)
+

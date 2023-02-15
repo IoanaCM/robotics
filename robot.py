@@ -106,6 +106,8 @@ class robot:
             self.BP.set_motor_limits(self.L, 50)
             self.BP.set_motor_limits(self.R, 50)
 
+            time.sleep(0.1)
+
         except IOError as error:
             print(error)
 
@@ -214,11 +216,17 @@ class robot:
 
     def get_sensor_reading(self):
         try:
+            r = 0
             r = self.BP.get_sensor(self.sonar)
             self.sensor_readings.append(r)
             if len(self.sensor_readings) > 5:
                 self.sensor_readings.pop(0)
-            return median(self.sensor_readings)                 
-        except brickpi3.SensorError as error:
-            print(error)
+            return median(self.sensor_readings)
+
+        except brickpi3.SensorError as e:
+            print("Sensor Error: ", e)
+            return
+
+        except Exception as e:
+            print(e)
             return
