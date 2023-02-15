@@ -5,15 +5,17 @@ import robot
 import time
 
 #global variables
-pause = 1             # pause delay in seconds
-num_particles = 100   # number of particle predictions
-sigma_e = 0.01   # standard deviation in cm      - error of driving too far/short during forward movement
-sigma_f = 0.006  # standard deviation in radians - error of turning during forward motion
-sigma_g = 0.006  # standard deviation in radians - error of turning too far/short during spin
+pause = 1               # pause delay in seconds
+clear_particles = True  # clear particles before drawing next set
+draw_arrows = False     # draw arrows on particles to show theta
+                        #  Unfortunately lines dont clear so recommend
+                        #  draw_arrows True only if clear_particles is False
 
 def main():
     r = robot.robot()
     r.setup()
+
+    all_particles = [] # used to store history of positions
 
     try:
 
@@ -22,8 +24,16 @@ def main():
         drawLine((40,0,40,40))
         drawLine((40,40,0,40))
         drawLine((0,40,0,0))
+
+        #draw expected 5cm error square
+        drawLine((-5,-5,5,-5))
+        drawLine((5,-5,5,5))
+        drawLine((5,5,-5,5))
+        drawLine((-5,5,-5,-5))
+
         #draw initial particles
-        drawParticles(r.particles)
+        all_particles += r.particles
+        drawParticles(r.particles if clear_particles else all_particles)
         printMetrics(r.metrics())
 
         for i in range(0,4):
@@ -31,17 +41,21 @@ def main():
 
                 # move robot forward
                 r.forward(10)
-                drawParticles(r.particles)
+
+                all_particles += r.particles
+                drawParticles(r.particles if clear_particles else all_particles)
                 printMetrics(r.metrics())
                 time.sleep(pause)
 
             # spin robot
             r.spinL(90)
-            drawParticles(r.particles)
+
+            all_particles += r.particles
+            drawParticles(r.particles if clear_particles else all_particles)
             printMetrics(r.metrics())
             time.sleep(pause)
 
-        
+
 
 
     except KeyboardInterrupt: # except the program gets interrupted by Ctrl+C on the keyboard.
@@ -54,7 +68,7 @@ def main():
         r.shutdown()
         return
 
-    
+
 def printMetrics(metrics):
     ((mu_x,mu_y,mu_theta),(sigma_x,sigma_y,sigma_theta)) = metrics
     mx = "{:.3f}".format(mu_x)
@@ -100,6 +114,12 @@ def drawParticles(particles):
     #transform from robot coordinates to screen coordinates
     transformed_particles = list(map(transformPoint, particles))
     print("drawParticles:" + str(transformed_particles))
+
+    if draw_arrows:
+      for p in particles:
+        ((x,y,theta),_) = p
+        drawLine((x, y, x + 3*cos(theta), y + 3*sin(theta)))
+
     return
 
 
