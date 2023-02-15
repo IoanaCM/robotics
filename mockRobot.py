@@ -53,9 +53,9 @@ class robot:
         # particle estimates for position
         num_particles = 100
         self.particles = [((0,0,0), 1/num_particles)] * num_particles
-        self.sigma_e = 0.01   # standard deviation in cm      - error of driving too far/short, per unit forward movement
-        self.sigma_f = 0.006  # standard deviation in radians - error of turning during forward motion, per unit forward movement
-        self.sigma_g = 0.006  # standard deviation in radians - error of turning too far/short, per unit radian spin
+        self.sigma_e = 0.02   # standard deviation in cm      - error of driving too far/short, per unit forward movement
+        self.sigma_f = 0.001  # standard deviation in radians - error of turning during forward motion, per unit forward movement
+        self.sigma_g = 0.005  # standard deviation in radians - error of turning too far/short, per unit radian spin
 
         # sensor readings queue
         self.sensor_readings = []
@@ -232,3 +232,4 @@ class robot:
         except Exception as e:
             print(e)
             return
+
