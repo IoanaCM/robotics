@@ -236,7 +236,6 @@ class robot:
         for (Ax,Ay,Bx,By) in self.map:
             m = self.getDistanceToWall(x,y,theta,Ax,Ay,Bx,By)
             if m != -1:
-                print(m)
                 minM = min(m, minM)
         return minM
 
