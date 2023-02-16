@@ -30,12 +30,13 @@ def main():
                  (168,84,210,84),
                  (210,84,210,0),
                  (210,0,0,0)]
-        map = environment.Map(walls)
+        map = environment.Environment(walls)
         map.show()
 
         #draw initial particles
         ioInterface.drawParticles(r.particles)
         ioInterface.printMetrics(r.metrics())
+        print("closest wall is " + str(r.getDistanceToWallFacing(168, 168, PI)))
 
 
     except KeyboardInterrupt: # except the program gets interrupted by Ctrl+C on the keyboard.

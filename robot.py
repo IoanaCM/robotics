@@ -40,11 +40,19 @@ class robot:
 
         # particle estimates for position
         num_particles = 100
-        self.particles = [((0,0,0), 1/num_particles)] * num_particles
+        self.particles = [((84,30,0), 1/num_particles)] * num_particles
         self.sigma_e = 0.02   # standard deviation in cm      - error of driving too far/short, per unit forward movement
         self.sigma_f = 0.001  # standard deviation in radians - error of turning during forward motion, per unit forward movement
         self.sigma_g = 0.005  # standard deviation in radians - error of turning too far/short, per unit radian spin
 
+        self.map = [(0,0,0,168),
+                 (0,168,84,168),
+                 (84,126,84,210),
+                 (84,210,168,210),
+                 (168,210,168,84),
+                 (168,84,210,84),
+                 (210,84,210,0),
+                 (210,0,0,0)]
 
     #========== Private methods - Do not call directly ===========
     def circmean(self, thetas):
@@ -215,6 +223,45 @@ class robot:
         thetas = list(map(self.getTheta, self.particles))
         return ((mean(xs), mean(ys), self.circmean(thetas)),(np.std(xs), np.std(ys), np.std(thetas)))
 
+    def calculate_likelihood(x, y, theta, z):
+        # find out which wall the sonar beam would hit first and
+        # calculate expected depth measurement m that should be recorded
+        m = r.getDistanceToWallFacing(x, y, theta)
+        # TODO: calculate a likelihood  of difference between measured and expected depth
+        #       using a Gaussian model (with a constant added to make it more robust be recorde
+        pass
+
+    def getDistanceToWallFacing(self, x, y, theta):
+        minM = 10000
+        for (Ax,Ay,Bx,By) in self.map:
+            m = self.getDistanceToWall(x,y,theta,Ax,Ay,Bx,By)
+            if m != -1:
+                print(m)
+                minM = min(m, minM)
+        return minM
+
+    def getDistanceToWall(self, x, y, theta, Ax, Ay, Bx, By):
+        try:
+            m = ((By-Ay)*(Ax-x) - (Bx-Ax)*(Ay-y)) / ((By-Ay)*cos(theta) - (Bx-Ax)*sin(theta))
+            if m < 0:
+                return -1
+            intersectX = x + m*cos(theta)
+            intersectY = y + m*sin(theta)
+            #veretice wall
+            if(Ax == Bx):
+                #check intersection
+                if(min(Ay, By) <= intersectY <= max(Ay, By)):
+                    return m
+            #horizontal wall
+            if (Ay == By):
+                #check intersection
+                if (min(Ax, Bx) <= intersectX <= max(Ax, Bx)):
+                    return m
+            return -1
+
+        except ZeroDivisionError:
+            return -1
+        
     def get_sensor_reading(self):
         try:
             sensor_readings = []
