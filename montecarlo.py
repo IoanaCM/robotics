@@ -59,12 +59,16 @@ def drawLine(line):
     Wrapper for web interface\n
     line :: 4-tuple (x0,y0,x1,y1) - robot coordinates of line
     """
+    map_size = 210
+    margin = 10
+    scale = 3
+
     x0,y0,x1,y1 = line
     #transform from robot coordinates to screen coordinates
-    tx0 =  x0 * 10 + 100
-    ty0 = -y0 * 10 + 500
-    tx1 =  x1 * 10 + 100
-    ty1 = -y1 * 10 + 500
+    tx0 = (x0 + margin) * scale
+    ty0 = (-y0 + margin + map_size) * scale
+    tx1 = (x1 + margin) * scale
+    ty1 = (-y1 + margin + map_size) * scale
     graphic = (tx0,ty0,tx1,ty1)
     print("drawLine:" + str(graphic))
     return
@@ -75,9 +79,13 @@ def transformPoint(point):
     converts point from robot coordinates to screen coordinates
     point :: tuple ((x,y,theta),weight)
     """
+    map_size = 210
+    margin = 10
+    scale = 3
+
     ((x,y,theta), _) = point
 
-    return (10 * x + 100, -y * 10 + 500, theta)
+    return ((x + margin) * scale, (-y + margin + map_size) * scale, theta)
 
 def drawParticles(particles):
     """
