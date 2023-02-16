@@ -24,6 +24,9 @@ class robot:
         self.wheel_radius = 2.8     # radius of robot wheels (cm)
         self.robot_width = 23       # width between wheels of robot (cm)
         self.dps = 360              # desired wheel speed (degrees per second)
+        self.sonar_offset = -3      # offset to account for sonar not being at robot centre
+                                    #  positive value if sonar is in front of center
+                                    #  measured in cm
 
         #manually calibrated tuning to adjust error
         self.forward_tuning = 0.0725    # increasing makes the robot drive further
@@ -42,8 +45,6 @@ class robot:
         self.sigma_f = 0.001  # standard deviation in radians - error of turning during forward motion, per unit forward movement
         self.sigma_g = 0.005  # standard deviation in radians - error of turning too far/short, per unit radian spin
 
-        # sensor readings queue
-        self.sensor_readings = []
 
     #========== Private methods - Do not call directly ===========
     def circmean(self, thetas):
@@ -216,11 +217,11 @@ class robot:
 
     def get_sensor_reading(self):
         try:
-            r = 0
-            r = self.BP.get_sensor(self.sonar)
-            self.sensor_readings.append(r)
-            if len(self.sensor_readings) > 5:
-                self.sensor_readings.pop(0)
+            sensor_readings = []
+            for i in range (0,4):
+                r = self.BP.get_sensor(self.sonar)
+                sensor_readings.append(r + self.sonar_offset)
+            
             return median(self.sensor_readings)
 
         except brickpi3.SensorError as e:
