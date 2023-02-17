@@ -4,6 +4,7 @@ import numpy as np
 from statistics import median, mean
 import time
 import random
+#import environment
 import brickpi3
 
 # Class specialised to our robot design
@@ -45,14 +46,8 @@ class robot:
         self.sigma_f = 0.001  # standard deviation in radians - error of turning during forward motion, per unit forward movement
         self.sigma_g = 0.005  # standard deviation in radians - error of turning too far/short, per unit radian spin
 
-        self.map = [(0,0,0,168),
-                 (0,168,84,168),
-                 (84,126,84,210),
-                 (84,210,168,210),
-                 (168,210,168,84),
-                 (168,84,210,84),
-                 (210,84,210,0),
-                 (210,0,0,0)]
+        # set with robot.setEnvironment(environment.Map)
+        self.map = None
 
     #========== Private methods - Do not call directly ===========
     def circmean(self, thetas):
@@ -71,7 +66,6 @@ class robot:
 
         e = random.gauss(0, distance * self.sigma_e)
         f = random.gauss(0, distance * self.sigma_f)
-        #print("theta: " + str(theta) + " new theta: " +   str((theta + f) % (2*PI) ))
         return ((x + (distance + e) * cos(theta), y + (distance + e) * sin(theta), (theta + f) % (2*PI)), weight)
 
 
@@ -103,7 +97,7 @@ class robot:
 
     def setup(self):
         """
-        Initialises the motors. Should be called before using other functions
+        Initialises the motors. Must be called before using other functions
         """
 
         try:
@@ -131,6 +125,13 @@ class robot:
         time.sleep(0.5)
         self.BP.reset_all()
         return
+
+    def setEnvironment(self, environment):
+        """
+        Sets the world map the robot is running within\n
+        Must be set before calling getDistanceToWallFacing
+        """
+        self.map = environment
 
     def stop(self):
         """
@@ -223,29 +224,41 @@ class robot:
         thetas = list(map(self.getTheta, self.particles))
         return ((mean(xs), mean(ys), self.circmean(thetas)),(np.std(xs), np.std(ys), np.std(thetas)))
 
-    def calculate_likelihood(x, y, theta, z):
+    def calculate_likelihood(self, x, y, theta, z):
         # find out which wall the sonar beam would hit first and
         # calculate expected depth measurement m that should be recorded
-        m = r.getDistanceToWallFacing(x, y, theta)
+        m = self.getDistanceToWallFacing(x, y, theta)
         # TODO: calculate a likelihood  of difference between measured and expected depth
         #       using a Gaussian model (with a constant added to make it more robust be recorde
         pass
 
     def getDistanceToWallFacing(self, x, y, theta):
-        minM = 10000
-        for (Ax,Ay,Bx,By) in self.map:
-            m = self.getDistanceToWall(x,y,theta,Ax,Ay,Bx,By)
-            if m != -1:
+        if not self.map:
+            raise NoEnvironmentException("No environment map set. Use robot.setEnvironment(environment.Map)")
+            
+        minM = 256 # max sonar reading is 255
+        for (Ax,Ay,Bx,By) in self.map.walls:
+            try:
+                m = self.getDistanceToWall(x,y,theta,Ax,Ay,Bx,By)
                 minM = min(m, minM)
+            except CantSeeWallException as e:
+                pass #do nothing, just try the next wall in loop
+
         return minM
 
     def getDistanceToWall(self, x, y, theta, Ax, Ay, Bx, By):
+        """
+        Given a position x, y, theta, calculate the distance to the wall
+        given by endpoints Ax,Ay and Bx,By
+        """
         try:
             m = ((By-Ay)*(Ax-x) - (Bx-Ax)*(Ay-y)) / ((By-Ay)*cos(theta) - (Bx-Ax)*sin(theta))
             if m < 0:
-                return -1
+                raise CantSeeWallException("Wall is behind robot")
             intersectX = x + m*cos(theta)
             intersectY = y + m*sin(theta)
+
+            #----------------------------------
             #veretice wall
             if(Ax == Bx):
                 #check intersection
@@ -256,19 +269,28 @@ class robot:
                 #check intersection
                 if (min(Ax, Bx) <= intersectX <= max(Ax, Bx)):
                     return m
-            return -1
-
+            raise CantSeeWallException("Wall does not extend far enough for robot to see")
+            #-----------------------------------
+            #should this block just be checking that 
+            # if( (min(Ay,By) <= intersectY <= max(Ay,By)) and
+            # (min(Ax,Bx) <= intersectX <= max(Ax,Bx)) ):
+            #   return m
+            # else:
+            #   raise CantSeeWallException("Wall does not extend far enough for robot to see")
+            #
+            # then it isnt limited to orthogonal walls
+            
         except ZeroDivisionError:
-            return -1
+            raise CantSeeWallException("robot is parallel to wall")
         
     def get_sensor_reading(self):
         try:
             sensor_readings = []
-            for i in range (0,4):
+            for i in range (0,5):
                 r = self.BP.get_sensor(self.sonar)
                 sensor_readings.append(r + self.sonar_offset)
             
-            return median(self.sensor_readings)
+            return median(sensor_readings)
 
         except brickpi3.SensorError as e:
             print("Sensor Error: ", e)
@@ -278,3 +300,9 @@ class robot:
             print(e)
             return
 
+
+class NoEnvironmentException(Exception):
+    pass
+
+class CantSeeWallException(Exception):
+    pass

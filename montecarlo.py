@@ -31,6 +31,7 @@ def main():
                  (210,84,210,0),
                  (210,0,0,0)]
         map = environment.Environment(walls)
+        r.setEnvironment(map)
         map.show()
 
         #draw initial particles
@@ -52,5 +53,4 @@ def main():
 
 
 if __name__ == "__main__":
-    #random.seed(17) # seed RNG for reproduceable results
     main()
