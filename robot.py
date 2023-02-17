@@ -194,7 +194,10 @@ class robot:
         return
 
 
-    def navigateToWaypoint(self, Wx, Wy):   
+    def navigateToWaypoint(self, Wx, Wy):
+        """
+        Travel to the the point Wx,Wy in world coordinates
+        """   
         (x, y, theta), (_, _, _) = self.metrics()
 
         dx = Wx - x
@@ -225,6 +228,9 @@ class robot:
         return ((mean(xs), mean(ys), self.circmean(thetas)),(np.std(xs), np.std(ys), np.std(thetas)))
 
     def calculate_likelihood(self, x, y, theta, z):
+        """
+        Not implemented yet
+        """
         # find out which wall the sonar beam would hit first and
         # calculate expected depth measurement m that should be recorded
         m = self.getDistanceToWallFacing(x, y, theta)
@@ -233,6 +239,10 @@ class robot:
         pass
 
     def getDistanceToWallFacing(self, x, y, theta):
+        """
+        Get the distance to the wall the robot is currently facing\n
+        Requires robot environment map to be set with robot.setEnvironment(environment.Map)
+        """
         if not self.map:
             raise NoEnvironmentException("No environment map set. Use robot.setEnvironment(environment.Map)")
             
@@ -248,13 +258,17 @@ class robot:
 
     def getDistanceToWall(self, x, y, theta, Ax, Ay, Bx, By):
         """
-        Given a position x, y, theta, calculate the distance to the wall
-        given by endpoints Ax,Ay and Bx,By
+        Given a position x, y, theta, calculate the distance to the
+        wall defined by endpoints Ax,Ay and Bx,By
         """
         try:
             m = ((By-Ay)*(Ax-x) - (Bx-Ax)*(Ay-y)) / ((By-Ay)*cos(theta) - (Bx-Ax)*sin(theta))
             if m < 0:
                 raise CantSeeWallException("Wall is behind robot")
+                #
+                #    ⦽
+                #  ------
+
             intersectX = x + m*cos(theta)
             intersectY = y + m*sin(theta)
 
@@ -269,7 +283,13 @@ class robot:
                 #check intersection
                 if (min(Ax, Bx) <= intersectX <= max(Ax, Bx)):
                     return m
+
             raise CantSeeWallException("Wall does not extend far enough for robot to see")
+            #  ---
+            #      ⦽
+            #  
+
+
             #-----------------------------------
             #should this block just be checking that 
             # if( (min(Ay,By) <= intersectY <= max(Ay,By)) and
@@ -282,8 +302,15 @@ class robot:
             
         except ZeroDivisionError:
             raise CantSeeWallException("robot is parallel to wall")
+            #      |
+            #  ⦽  |
+            #      |
         
     def get_sensor_reading(self):
+        """
+        Set sonar reading to objcts infront of sonar sensor\n
+        Returns value in range 0-255 cm
+        """
         try:
             sensor_readings = []
             for i in range (0,5):
