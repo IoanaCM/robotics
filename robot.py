@@ -233,10 +233,10 @@ class robot:
         """
         # find out which wall the sonar beam would hit first and
         # calculate expected depth measurement m that should be recorded
+        sigma = 3
+        K = 0.1
         m = self.getDistanceToWallFacing(x, y, theta)
-        # TODO: calculate a likelihood  of difference between measured and expected depth
-        #       using a Gaussian model (with a constant added to make it more robust be recorde
-        pass
+        return np.random.normal(z-m, sigma) + K
 
     def getDistanceToWallFacing(self, x, y, theta):
         """
@@ -326,6 +326,27 @@ class robot:
         except Exception as e:
             print(e)
             return
+        
+    def normalise_weights(self):
+        total = np.sum(self.particles[:][1])
+        for i in range(length(self.particles)):
+            self.particles[i][1] = self.particles[i][1] / total
+            
+    def resample(self):
+        bins = []
+        acc = 0
+        for i in range(self.num_particles):
+            acc+=self.particles[i][1]
+            bins[i] = acc
+        new_particles = []
+        for _ in range(self.num_particles):
+            k = 0
+            x = random.uniform(0, 1)
+            while(x<bins[k]):
+                k=k+1
+            new_particles.append(self.particles[k])
+        self.particles = new_particles
+        
 
 
 class NoEnvironmentException(Exception):
