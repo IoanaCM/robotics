@@ -241,6 +241,8 @@ class robot:
         """
         Travel to the the point Wx,Wy in world coordinates
         """   
+
+
         (x, y, theta), (_, _, _) = self.metrics()
 
         dx = Wx - x
@@ -250,15 +252,10 @@ class robot:
 
         beta = (alpha - theta) % (2*PI)
         beta = beta if beta <= PI else beta - 2*PI
-        
+
         d = sqrt(dx**2 + dy**2)
         self.spin(beta)
-        stops = int(d//20)
-        for _ in range(stops):
-            
-            self.forward(20)
-            time.sleep(1)
-        self.forward(d - stops*20)
+        self.forward(d)
         return
 
 

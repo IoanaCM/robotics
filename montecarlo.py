@@ -1,5 +1,5 @@
 from math import pi as PI
-from math import sin, cos
+from math import sin, cos, sqrt
 from numpy import mean, std
 import robot
 import environment
@@ -42,10 +42,22 @@ def main():
         for (Wx, Wy) in waypoints:
             ioInterface.drawCross(Wx,Wy)
 
-        for (Wx, Wy) in waypoints:
+        for i in range(len(waypoints)):
             (x,y,theta), (_,_,_) = r.metrics()
             print("I think I am at: " + str(x) + " " + str(y) + " Facing: " + str(theta))
-            r.navigateToWaypoint(Wx, Wy)
+
+            (Wx,Wy) = waypoints[i]
+
+            dx = Wx - x
+            dy = Wy - y
+            d = sqrt(dx**2 + dy**2)
+            if(d > 20):
+                dx = (dx * 20) / d
+                dy = (dy * 20) / d
+                r.navigateToWaypoint(x + dx, y + dy)
+            else: #distance less than 20, navigate in one step
+                r.navigateToWaypoint(Wx, Wy)
+                i+=1
 
 
     except KeyboardInterrupt: # except the program gets interrupted by Ctrl+C on the keyboard.
