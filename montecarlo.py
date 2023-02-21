@@ -39,6 +39,8 @@ def main():
         ioInterface.printMetrics(r.metrics())
 
         waypoints = [(180, 30), (180, 54), (138, 54), (138, 168), (114, 168), (114, 84),  (84, 84), (84, 30)]
+        for (Wx, Wy) in waypoints:
+            ioInterface.drawCross(Wx,Wy)
 
         for (Wx, Wy) in waypoints:
             (x,y,theta), (_,_,_) = r.metrics()

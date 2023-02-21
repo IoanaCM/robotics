@@ -46,6 +46,7 @@ def transformPoint(point):
 
     return ((x + margin) * scale, (-y + margin + map_size) * scale, theta, weight)
 
+
 def drawParticles(particles):
     """
     Wrapper for web interface\n
@@ -60,5 +61,17 @@ def drawParticles(particles):
       for p in particles:
         ((x,y,theta),_) = p
         drawLine((x, y, x + 3*np.cos(theta), y + 3*np.sin(theta)))
+
+    return
+
+
+def drawCross(x,y):
+    """
+    Draws a small cross centered at point\n
+    Cross will persist between drawParticles calls
+    """
+    size = 5
+    drawLine((x-size, y+size, x+size, y-size))
+    drawLine((x+size, y+size, x-size, y-size))
 
     return
