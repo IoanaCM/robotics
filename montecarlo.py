@@ -42,7 +42,7 @@ def main():
         for (Wx, Wy) in waypoints:
             ioInterface.drawCross(Wx,Wy)
 
-        for i in range(len(waypoints)):
+        while i < len(waypoints):
             (x,y,theta), (_,_,_) = r.metrics()
             print("I think I am at: " + str(x) + " " + str(y) + " Facing: " + str(theta))
 
