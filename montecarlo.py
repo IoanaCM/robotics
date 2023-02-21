@@ -37,7 +37,13 @@ def main():
         #draw initial particles
         ioInterface.drawParticles(r.particles)
         ioInterface.printMetrics(r.metrics())
-        print("closest wall is " + str(r.getDistanceToWallFacing(168, 168, PI)))
+
+        waypoints = [(180, 30), (180, 54), (138, 54), (138, 168), (114, 168), (114, 84),  (84, 84), (84, 30)]
+
+        for (Wx, Wy) in waypoints:
+            (x,y,theta), (_,_,_) = r.metrics()
+            print("I think I am at: " + str(x) + " " + str(y) + " Facing: " + str(theta))
+            r.navigateToWaypoint(Wx, Wy)
 
 
     except KeyboardInterrupt: # except the program gets interrupted by Ctrl+C on the keyboard.

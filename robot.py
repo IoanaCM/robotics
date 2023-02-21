@@ -4,6 +4,7 @@ import numpy as np
 from statistics import median, mean
 import time
 import random
+import ioInterface
 #import environment
 import brickpi3
 
@@ -40,11 +41,14 @@ class robot:
 
 
         # particle estimates for position
-        num_particles = 100
-        self.particles = [((84,30,0), 1/num_particles)] * num_particles
+        self.num_particles = 100
+        self.particles = [((84,30,0), 1/self.num_particles)] * self.num_particles
         self.sigma_e = 0.02   # standard deviation in cm      - error of driving too far/short, per unit forward movement
         self.sigma_f = 0.001  # standard deviation in radians - error of turning during forward motion, per unit forward movement
         self.sigma_g = 0.005  # standard deviation in radians - error of turning too far/short, per unit radian spin
+
+        self.sonar_sigma = 2.5  # standard deviation in cm - error in sonar reading
+        self.sonar_K = 0.1    # scalar offset in cm - error in sonar reading
 
         # set with robot.setEnvironment(environment.Map)
         self.map = None
@@ -57,7 +61,7 @@ class robot:
         z = x if x >= 0 else x + 2 * PI
         return z
 
-    def updateParticleForward(self, particle, distance):
+    def moveParticleForward(self, particle, distance):
         """
         Update particle prediction for forward movement of 10cm
         particle :: tuple ((x,y,theta),weight)
@@ -69,7 +73,7 @@ class robot:
         return ((x + (distance + e) * cos(theta), y + (distance + e) * sin(theta), (theta + f) % (2*PI)), weight)
 
 
-    def updateParticleSpin(self, particle, radians):
+    def moveParticleSpin(self, particle, radians):
         """
         Update particle prediction for left spin PI/2 radians
         particle :: tuple ((x,y,theta),weight)
@@ -79,6 +83,44 @@ class robot:
         g = random.gauss(0, radians * self.sigma_g)
         return ((x, y, (theta + radians + g) % (2*PI)), weight)
 
+
+    def updateParticles(self,particles):
+        z = self.get_sensor_reading() #step 2
+
+        for i in range(len(particles)):
+            ((x,y,theta),weight) = particles[i]
+            particles[i] = ((x,y,theta), weight * self.calculate_likelihood(x,y,theta,z))
+
+        #normalise so sum of weights = 1 #step 3
+        total = 0
+        for (_, weight) in particles:
+            total += weight
+
+        for i in range(len(particles)):
+            ((x,y,theta),weight) = particles[i]
+            particles[i] = ((x,y,theta),weight / total)
+        
+        ioInterface.drawParticles(particles)
+        time.sleep(1)
+        #resample particles #step 4
+        self.particles = self.resample(particles)
+        ioInterface.drawParticles(self.particles)
+     
+
+    def resample(self, particles):
+        bins = []
+        acc = 0
+        for i in range(len(particles)):
+            acc+=particles[i][1]
+            bins.append(acc)
+        new_particles = []
+        for _ in range(len(particles)):
+            k = 0
+            x = random.uniform(0, 1)
+            while(x<bins[k] and k < len(particles) - 1):
+                k=k+1
+            new_particles.append((particles[k][0], 1 / len(particles)))
+        return new_particles
 
     def getX(self, particle):
         ((x,_,_),_) = particle
@@ -153,10 +195,10 @@ class robot:
         time.sleep(max(0,t))
         self.stop()
 
-        new_particles = [self.updateParticleForward(p,distance) for p in self.particles]
-        self.particles = new_particles
+        new_particles = [self.moveParticleForward(p,distance) for p in self.particles] # step1
+        self.updateParticles(new_particles)
+
         return
-        
 
     def spin(self, radians):
         """
@@ -175,8 +217,9 @@ class robot:
         time.sleep(max(0,t))
         self.stop()
 
-        new_particles = [self.updateParticleSpin(p,radians) for p in self.particles]
-        self.particles = new_particles
+        new_particles = [self.moveParticleSpin(p,radians) for p in self.particles]
+        self.updateParticles(new_particles)
+
         return
 
     def spinL(self, degrees):
@@ -209,9 +252,13 @@ class robot:
         beta = beta if beta <= PI else beta - 2*PI
         
         d = sqrt(dx**2 + dy**2)
-        
         self.spin(beta)
-        self.forward(d)
+        stops = int(d//20)
+        for _ in range(stops):
+            
+            self.forward(20)
+            time.sleep(1)
+        self.forward(d - stops*20)
         return
 
 
@@ -229,14 +276,12 @@ class robot:
 
     def calculate_likelihood(self, x, y, theta, z):
         """
-        Not implemented yet
+        implemented yet
         """
         # find out which wall the sonar beam would hit first and
         # calculate expected depth measurement m that should be recorded
-        sigma = 3
-        K = 0.1
         m = self.getDistanceToWallFacing(x, y, theta)
-        return np.random.normal(z-m, sigma) + K
+        return np.random.normal(z-m, self.sonar_sigma) + self.sonar_K
 
     def getDistanceToWallFacing(self, x, y, theta):
         """
@@ -326,27 +371,10 @@ class robot:
         except Exception as e:
             print(e)
             return
-        
-    def normalise_weights(self):
-        total = np.sum(self.particles[:][1])
-        for i in range(length(self.particles)):
-            self.particles[i][1] = self.particles[i][1] / total
             
-    def resample(self):
-        bins = []
-        acc = 0
-        for i in range(self.num_particles):
-            acc+=self.particles[i][1]
-            bins[i] = acc
-        new_particles = []
-        for _ in range(self.num_particles):
-            k = 0
-            x = random.uniform(0, 1)
-            while(x<bins[k]):
-                k=k+1
-            new_particles.append(self.particles[k])
-        self.particles = new_particles
+    
         
+
 
 
 class NoEnvironmentException(Exception):

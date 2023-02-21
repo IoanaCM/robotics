@@ -1,3 +1,5 @@
+import numpy as np
+
 #Global variables
 map_size = 210          # Map size in cm
 margin = 10             # Margin on web display in cm (cm*scale pixels)
@@ -40,9 +42,9 @@ def transformPoint(point):
     converts point from robot coordinates to screen coordinates
     point :: tuple ((x,y,theta),weight)
     """
-    ((x,y,theta), _) = point
+    ((x,y,theta), weight) = point
 
-    return ((x + margin) * scale, (-y + margin + map_size) * scale, theta)
+    return ((x + margin) * scale, (-y + margin + map_size) * scale, theta, weight)
 
 def drawParticles(particles):
     """
@@ -57,6 +59,6 @@ def drawParticles(particles):
     if draw_arrows:
       for p in particles:
         ((x,y,theta),_) = p
-        drawLine((x, y, x + 3*cos(theta), y + 3*sin(theta)))
+        drawLine((x, y, x + 3*np.cos(theta), y + 3*np.sin(theta)))
 
     return
