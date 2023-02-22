@@ -70,7 +70,7 @@ def drawCross(x,y):
     Draws a small cross centered at point\n
     Cross will persist between drawParticles calls
     """
-    size = 5
+    size = 2.5
     drawLine((x-size, y+size, x+size, y-size))
     drawLine((x+size, y+size, x-size, y-size))
 
