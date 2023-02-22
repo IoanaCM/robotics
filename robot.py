@@ -85,6 +85,7 @@ class robot:
 
 
     def updateParticles(self,particles):
+        ioInterface.drawParticles(particles)
         z = self.get_sensor_reading() #step 2
 
         for i in range(len(particles)):
@@ -100,8 +101,7 @@ class robot:
             ((x,y,theta),weight) = particles[i]
             particles[i] = ((x,y,theta),weight / total)
         
-        ioInterface.drawParticles(particles)
-        time.sleep(1)
+        
         #resample particles #step 4
         self.particles = self.resample(particles)
         ioInterface.drawParticles(self.particles)
