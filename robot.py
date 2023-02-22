@@ -360,6 +360,7 @@ class robot:
                 r = self.BP.get_sensor(self.sonar)
                 sensor_readings.append(r + self.sonar_offset)
             
+            print(f"Sensor reading: {sensor_readings}")
             return median(sensor_readings)
 
         except brickpi3.SensorError as e:
@@ -371,10 +372,7 @@ class robot:
             return
             
     
-        
-
-
-
+    
 class NoEnvironmentException(Exception):
     pass
 
