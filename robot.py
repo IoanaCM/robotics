@@ -32,7 +32,7 @@ class robot:
 
         #manually calibrated tuning to adjust error
         self.forward_tuning = 0.0725    # increasing makes the robot drive further
-        self.spin_tuning = -0.002       # increasing makes the robot turn more ## maybe 0.015 is better???
+        self.spin_tuning = 0            # increasing makes the robot turn more ## maybe 0.015 is better???
 
 
         # constants calculated from configurable constants (should not be changed)
@@ -44,11 +44,11 @@ class robot:
         num_particles = 100
         self.particles = [((84,30,0), 1/num_particles)] * num_particles
         self.sigma_e = 0.015   # standard deviation in cm      - error of driving too far/short, per unit forward movement
-        self.sigma_f = 0.0015  # standard deviation in radians - error of turning during forward motion, per unit forward movement
+        self.sigma_f = 0.0015   # standard deviation in radians - error of turning during forward motion, per unit forward movement
         self.sigma_g = 0.006   # standard deviation in radians - error of turning too far/short, per unit radian spin
 
         self.sonar_sigma = 2.5  # standard deviation in cm - error in sonar reading
-        self.sonar_K = 0.1      # scalar offset in cm - error in sonar reading
+        self.sonar_K = 0.05     # scalar proportion offset - error in sonar reading
 
         # set with robot.setEnvironment(environment.Map)
         self.map = None
