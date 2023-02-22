@@ -31,7 +31,7 @@ class robot:
                                     #  measured in cm
 
         #manually calibrated tuning to adjust error
-        self.forward_tuning = 0.06      # increasing makes the robot drive further
+        self.forward_tuning = 0.0725    # increasing makes the robot drive further
         self.spin_tuning = 0            # increasing makes the robot turn more ## maybe 0.015 is better???
 
 
@@ -359,6 +359,7 @@ class robot:
             for i in range (0,5):
                 r = self.BP.get_sensor(self.sonar)
                 sensor_readings.append(r + self.sonar_offset)
+                time.sleep(0.2)
             
             print(f"Sensor reading: {sensor_readings}")
             return median(sensor_readings)
