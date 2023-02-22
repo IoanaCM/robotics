@@ -31,7 +31,7 @@ class robot:
                                     #  measured in cm
 
         #manually calibrated tuning to adjust error
-        self.forward_tuning = 0.0725    # increasing makes the robot drive further
+        self.forward_tuning = 0.07    # increasing makes the robot drive further
         self.spin_tuning = 0            # increasing makes the robot turn more ## maybe 0.015 is better???
 
 
