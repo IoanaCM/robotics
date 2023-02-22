@@ -26,7 +26,7 @@ class robot:
         self.wheel_radius = 2.8     # radius of robot wheels (cm)
         self.robot_width = 23       # width between wheels of robot (cm)
         self.dps = 360              # desired wheel speed (degrees per second)
-        self.sonar_offset = -1.5      # offset to account for sonar not being at robot centre
+        self.sonar_offset = -1      # offset to account for sonar not being at robot centre
                                     #  positive value if sonar is in front of center
                                     #  measured in cm
 
