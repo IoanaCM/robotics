@@ -42,7 +42,9 @@ def main():
         for (Wx, Wy) in waypoints:
             ioInterface.drawCross(Wx,Wy)
 
+        i=0
         while i < len(waypoints):
+            print("===============================" + str(i) + "====================================")
             (x,y,theta), (_,_,_) = r.metrics()
             print("I think I am at: " + str(x) + " " + str(y) + " Facing: " + str(theta))
 
@@ -59,6 +61,9 @@ def main():
                 r.navigateToWaypoint(Wx, Wy)
                 i+=1
 
+        # while True:
+        #     r.spin(-PI/2)
+        #     time.sleep(2)
 
     except KeyboardInterrupt: # except the program gets interrupted by Ctrl+C on the keyboard.
         print("Quitting early")

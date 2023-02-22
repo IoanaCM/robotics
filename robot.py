@@ -26,13 +26,13 @@ class robot:
         self.wheel_radius = 2.8     # radius of robot wheels (cm)
         self.robot_width = 23       # width between wheels of robot (cm)
         self.dps = 360              # desired wheel speed (degrees per second)
-        self.sonar_offset = -3      # offset to account for sonar not being at robot centre
+        self.sonar_offset = -1.5      # offset to account for sonar not being at robot centre
                                     #  positive value if sonar is in front of center
                                     #  measured in cm
 
         #manually calibrated tuning to adjust error
         self.forward_tuning = 0.0725    # increasing makes the robot drive further
-        self.spin_tuning = -0.013       # increasing makes the robot turn more
+        self.spin_tuning = -0.013      # increasing makes the robot turn more ## maybe 0.015 is better???
 
 
         # constants calculated from configurable constants (should not be changed)
@@ -255,6 +255,7 @@ class robot:
 
         d = sqrt(dx**2 + dy**2)
         self.spin(beta)
+        print("Turning: " + str(180/PI * beta))
         self.forward(d)
         return
 
